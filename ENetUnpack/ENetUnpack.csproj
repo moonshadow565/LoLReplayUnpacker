@@ -49,8 +49,10 @@
     <Compile Include="ENetProtocol.cs" />
     <Compile Include="Handlers\Blowfish.cs" />
     <Compile Include="Handlers\ENetCommandCounter.cs" />
+    <Compile Include="Handlers\ENetPacketAdderBase.cs" />
     <Compile Include="Handlers\ENetPacketExtractor.cs" />
-    <Compile Include="Handlers\ENetPacketExtractorDecrypt.cs" />
+    <Compile Include="Handlers\ENetPacketDecrypt.cs" />
+    <Compile Include="Handlers\ENetPacketUnbatcher.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Replay.cs" />

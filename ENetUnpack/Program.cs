@@ -18,7 +18,9 @@ namespace ENetUnpack
                 fileName = args[0];
             var json = File.ReadAllText(fileName);
             var replay = JsonConvert.DeserializeObject<Replay>(json);
-            var handler = new ENetPacketExtractorDecrypt(replay.encryptionKey);
+            var unbatcher = new ENetPacketUnbatcher();
+            var decrypt = new ENetPacketDecrypt(replay.encryptionKey, unbatcher);
+            var handler = new ENetPacketExtractor(decrypt);
             foreach(var rPacket  in replay.packets)
             {
                 using (var reader = new BinaryReader(new MemoryStream(rPacket.Bytes)))
@@ -28,6 +30,7 @@ namespace ENetUnpack
             }      
             var json2 = JsonConvert.SerializeObject(handler.Packets, Formatting.Indented);
             File.WriteAllText(fileName.Replace(".json", ".unpacked.json"), json2);
+            Console.WriteLine("Done!");
             Console.ReadLine();
         }
     }

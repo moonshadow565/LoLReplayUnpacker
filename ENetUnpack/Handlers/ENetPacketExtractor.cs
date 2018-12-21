@@ -6,18 +6,30 @@ using System.Threading.Tasks;
 
 namespace ENetUnpack.Handlers
 {
-    public class ENetPacketExtractor : ENetProtocolHandler
+    public interface IENetPacketAdder
     {
-        public List<ENetPacket> Packets { get; set; } = new List<ENetPacket>();
-        public virtual void AddPacket(byte channel, byte[] data, ENetPacketFlags flags, float time)
+        void AddPacket(byte channel, byte[] data, ENetPacketFlags flags, float time);
+        List<ENetPacket> Packets { get; }
+    }
+
+    public class ENetPacketExtractor : ENetProtocolHandler, IENetPacketAdder
+    {
+        public List<ENetPacket> Packets => _adder.Packets;
+        private IENetPacketAdder _adder;
+
+        public ENetPacketExtractor()
         {
-            Packets.Add(new ENetPacket
-            {
-                Channel = channel,
-                Bytes = data,
-                Flags = flags,
-                Time = time,
-            });
+            _adder = new ENetPacketAdderBase();
+        }
+        
+        public ENetPacketExtractor(IENetPacketAdder adder)
+        {
+            _adder = adder;
+        }
+
+        public void AddPacket(byte channel, byte[] data, ENetPacketFlags flags, float time)
+        {
+            _adder.AddPacket(channel, data, flags, time);
         }
 
         public override bool HandleProtocol(ENetProtocolHeader protocolHeader, ENetProtocolCommandHeader protocolCommandHeader, ENetProtocol protocol)
