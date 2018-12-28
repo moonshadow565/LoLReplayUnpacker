@@ -5,26 +5,23 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ENetUnpack.Handlers
+namespace ENetUnpack.ReplayParser
 {
-    public class ENetPacketUnbatcher : IENetPacketAdder
+    public class PacketAdder
     {
-        protected IENetPacketAdder _adder;
-        public ENetPacketUnbatcher()
-        {
-            _adder = new ENetPacketAdderBase();
-        }
-        public ENetPacketUnbatcher(IENetPacketAdder adder)
-        {
-            _adder = adder;
-        }
-        public List<ENetPacket> Packets => _adder.Packets;
+        public List<ENetPacket> Packets { get; } = new List<ENetPacket>();
 
-        public void AddPacket(byte channel, byte[] data, ENetPacketFlags flags, float time)
+        public void AddPacket(byte[] data, float time, byte channel, ENetPacketFlags flags)
         {
-            if(data[0] != 0xFF)
+            if (data[0] != 0xFF)
             {
-                _adder.AddPacket(channel, data, flags, time);
+                Packets.Add(new ENetPacket
+                {
+                    Channel = channel,
+                    Bytes = data,
+                    Flags = flags,
+                    Time = time,
+                });
             }
             else
             {
@@ -33,8 +30,10 @@ namespace ENetUnpack.Handlers
                     Ubatch(channel, reader, flags, time);
                 }
             }
+
         }
-        private void Ubatch(byte channel, BinaryReader reader,  ENetPacketFlags flags, float time)
+
+        private void Ubatch(byte channel, BinaryReader reader, ENetPacketFlags flags, float time)
         {
             reader.ReadByte();
             int count = reader.ReadByte();
@@ -90,11 +89,16 @@ namespace ENetUnpack.Handlers
                     stream.Seek(0, SeekOrigin.Begin);
                     using (var packetReader = new BinaryReader(stream, Encoding.UTF8, true))
                     {
-                        _adder.AddPacket(channel, packetReader.ReadBytes((int)stream.Length), flags, time);
+                        Packets.Add(new ENetPacket
+                        {
+                            Channel = channel,
+                            Bytes = packetReader.ReadBytes((int)stream.Length),
+                            Flags = flags,
+                            Time = time,
+                        });
                     }
                 }
             }
-
         }
     }
 }

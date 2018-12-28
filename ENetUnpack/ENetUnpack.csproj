@@ -46,17 +46,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ENetProtocol.cs" />
-    <Compile Include="Handlers\Blowfish.cs" />
-    <Compile Include="Handlers\ENetCommandCounter.cs" />
-    <Compile Include="Handlers\ENetPacketAdderBase.cs" />
-    <Compile Include="Handlers\ENetPacketExtractor.cs" />
-    <Compile Include="Handlers\ENetPacketDecrypt.cs" />
-    <Compile Include="Handlers\ENetPacketUnbatcher.cs" />
+    <Compile Include="ReplayParser\BDODecompress.cs" />
+    <Compile Include="ReplayParser\ChunkParserSpectator.cs" />
+    <Compile Include="ReplayParser\ENetProtocol.cs" />
+    <Compile Include="ReplayParser\Blowfish.cs" />
+    <Compile Include="ReplayParser\HttpProtocol.cs" />
+    <Compile Include="ReplayParser\IChunkParser.cs" />
+    <Compile Include="ReplayParser\PacketAdder.cs" />
+    <Compile Include="ReplayParser\ChunkParserENet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Replay.cs" />
-    <Compile Include="Utils.cs" />
+    <Compile Include="ReplayParser\ReplayReader.cs" />
+    <Compile Include="ReplayParser\Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

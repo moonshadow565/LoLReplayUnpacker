@@ -1,35 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ENetUnpack.Handlers
+namespace ENetUnpack.ReplayParser
 {
-    public interface IENetPacketAdder
+    public class ChunkParserENet : ENetProtocolHandler, IChunkParser
     {
-        void AddPacket(byte channel, byte[] data, ENetPacketFlags flags, float time);
-        List<ENetPacket> Packets { get; }
-    }
+        private ENetLeagueVersion _enetLeagueVersion;
+        private BlowFish _blowfish;
+        private PacketAdder _packetAdder = new PacketAdder();
 
-    public class ENetPacketExtractor : ENetProtocolHandler, IENetPacketAdder
-    {
-        public List<ENetPacket> Packets => _adder.Packets;
-        private IENetPacketAdder _adder;
+        public List<ENetPacket> Packets => _packetAdder.Packets;
 
-        public ENetPacketExtractor()
+        public ChunkParserENet(ENetLeagueVersion eNetLeagueVersion, byte[] key)
         {
-            _adder = new ENetPacketAdderBase();
-        }
-        
-        public ENetPacketExtractor(IENetPacketAdder adder)
-        {
-            _adder = adder;
+            _enetLeagueVersion = eNetLeagueVersion;
+            _blowfish = new BlowFish(key);
         }
 
-        public void AddPacket(byte channel, byte[] data, ENetPacketFlags flags, float time)
+        public ChunkParserENet(ENetLeagueVersion eNetLeagueVersion, string base64key)
         {
-            _adder.AddPacket(channel, data, flags, time);
+            _enetLeagueVersion = eNetLeagueVersion;
+            _blowfish = new BlowFish(Convert.FromBase64String(base64key));
+        }
+
+        public void AddPacket(byte[] data, float time, byte channel, ENetPacketFlags flags)
+        {
+            if(channel > 7)
+            {
+                _packetAdder.AddPacket(data, time, channel, flags);
+            }
+            else
+            {
+                _packetAdder.AddPacket(_blowfish.Decrypt(data), time, channel, flags);
+            }
         }
 
         public override bool HandleProtocol(ENetProtocolHeader protocolHeader, ENetProtocolCommandHeader protocolCommandHeader, ENetProtocol protocol)
@@ -45,19 +52,19 @@ namespace ENetUnpack.Handlers
 
         public bool Handle(ENetProtocolSendReliable command, ENetProtocolHeader protocolHeader,ENetProtocolCommandHeader commandHeader)
         {
-            AddPacket(commandHeader.Channel, command.Data, ENetPacketFlags.Reliable, protocolHeader.TimeRecieved);
+            AddPacket(command.Data, protocolHeader.TimeRecieved, commandHeader.Channel, ENetPacketFlags.Reliable);
             return true;
         }
 
         public bool Handle(ENetProtocolSendUnsequenced command, ENetProtocolHeader protocolHeader, ENetProtocolCommandHeader commandHeader)
         {
-            AddPacket(commandHeader.Channel, command.Data, ENetPacketFlags.Unsequenced, protocolHeader.TimeRecieved);
+            AddPacket(command.Data, protocolHeader.TimeRecieved, commandHeader.Channel, ENetPacketFlags.Unsequenced);
             return true;
         }
 
         public bool Handle(ENetProtocolSendUnreliable command, ENetProtocolHeader protocolHeader, ENetProtocolCommandHeader commandHeader)
         {
-            AddPacket(commandHeader.Channel, command.Data, ENetPacketFlags.None, protocolHeader.TimeRecieved);
+            AddPacket(command.Data, protocolHeader.TimeRecieved, commandHeader.Channel, ENetPacketFlags.None);
             return true;
         }
 
@@ -127,11 +134,19 @@ namespace ENetUnpack.Handlers
 
             Buffer.BlockCopy(command.Data, 0, buffer.Buffer, (int)command.FragmentOffset, command.Data.Length);
             if (buffer.FragmentsLeft <= 0)
-            { 
-                AddPacket(commandHeader.Channel, buffer.Buffer, ENetPacketFlags.Reliable, protocolHeader.TimeRecieved);
+            {
+                AddPacket(buffer.Buffer, protocolHeader.TimeRecieved, commandHeader.Channel, ENetPacketFlags.Reliable);
                 channel.Remove(command.StartSequenceNumber);
             }
             return true;
+        }
+
+        public void Read(byte[] data, float time)
+        {
+            using(var reader = new BinaryReader(new MemoryStream(data)))
+            {
+                Read(reader, time, _enetLeagueVersion);
+            }
         }
     }
 }
