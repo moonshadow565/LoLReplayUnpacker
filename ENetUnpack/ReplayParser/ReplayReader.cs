@@ -30,6 +30,9 @@ namespace ENetUnpack.ReplayParser
         [JsonProperty("encryptionKey")]
         public byte[] EncryptionKey { get; set; }
 
+        [JsonProperty("matchID")]
+        public int MatchID { get; set; }
+
         [JsonProperty("spectatorMode")]
         public bool SpectatorMode { get; set; }
 
@@ -71,7 +74,7 @@ namespace ENetUnpack.ReplayParser
                 IChunkParser _chunkParser = null;
                 if(_replay.SpectatorMode)
                 {
-                    throw new NotImplementedException("Spectator replays are fucky wucky!");
+                    _chunkParser = new ChunkParserSpectator(_replay.EncryptionKey, _replay.MatchID);
                 }
                 else
                 {                    

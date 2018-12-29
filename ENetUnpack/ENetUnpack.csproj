@@ -52,7 +52,6 @@
     <Compile Include="ReplayParser\Blowfish.cs" />
     <Compile Include="ReplayParser\HttpProtocol.cs" />
     <Compile Include="ReplayParser\IChunkParser.cs" />
-    <Compile Include="ReplayParser\PacketAdder.cs" />
     <Compile Include="ReplayParser\ChunkParserENet.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

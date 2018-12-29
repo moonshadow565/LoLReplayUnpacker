@@ -42,6 +42,7 @@ namespace ENetUnpack.ReplayParser
                     HandleGetText(data, time);
                     break;
                 case HttpState.Done:
+                    HandleDone(data, time);
                     break;
             }
         }
@@ -82,9 +83,49 @@ namespace ENetUnpack.ReplayParser
             }
         }
 
+        private static readonly Regex RE_CONTENT_LEN = new Regex("^Content-Length: ([0-9]+)", RegexOptions.IgnoreCase);
+
         private void HandleHttp(byte[] data, float time)
         {
+            using (var stream = new MemoryStream(data))
+            {
+                bool istxt = true;
+                long contentLength = -1;
+                using (var txt = new StreamReader(stream, Encoding.UTF8, false, 1024, true))
+                {
+                    string line;
+                    do
+                    {
+                        line = txt.ReadLine();
+                        if(line.Contains("application/octet-stream"))
+                        {
+                            istxt = false;
+                        }
+                        var contentLengthMatch = RE_CONTENT_LEN.Match(line);
+                        if (contentLengthMatch.Success)
+                        {
+                            contentLength = long.Parse(contentLengthMatch.Groups[1].Value);
+                        }
+                    } while (line != "");
 
+                    if (contentLength == -1)
+                    {
+                        contentLength = stream.Length - stream.Position;
+                    }
+                }
+                using (var binary = new BinaryReader(stream, Encoding.UTF8, true))
+                {
+                    var content = binary.ReadBytes((int)contentLength);
+                    if (istxt)
+                    {
+                        HandleTextPacket(Encoding.UTF8.GetString(content), time);
+                    }
+                    else
+                    {
+                        HandleBinaryPacket(content, time);
+                    }
+                }
+            }
         }
     }
 }
