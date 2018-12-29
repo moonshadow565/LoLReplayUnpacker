@@ -36,9 +36,9 @@ namespace ENetUnpack.ReplayParser
         [JsonProperty("dataIndex")]
         public List<KeyValuePair<string, DataOffset>> DataIndex { get; set; }
 
-        public static List<ENetPacket> ReadPackets(Stream stream)
+        public static List<ENetPacket> ReadPackets(Stream stream, ENetLeagueVersion? enetLeagueVersion)
         {
-            using (var reader = new BinaryReader(stream, Encoding.UTF8, false))
+            using (var reader = new BinaryReader(stream))
             {
                 // Basic header
                 var _unused = reader.ReadByte();
@@ -62,10 +62,10 @@ namespace ENetUnpack.ReplayParser
                 {
                     _data = BDODecompress.Decompress(_data);
                 }
-                
+
                 // FIXME: detect correct league version
                 // TODO: determing where exact breaking changes in league ENet are??
-                var _enetLeageuVersion = ENetLeagueVersion.Patch_1_0_0_106;
+                var _enetLeagueVersion = enetLeagueVersion ?? ENetLeagueVersion.Patch_4_20;
 
                 // Type of parser spectator or ingame/ENet
                 IChunkParser _chunkParser = null;
@@ -75,7 +75,7 @@ namespace ENetUnpack.ReplayParser
                 }
                 else
                 {                    
-                    _chunkParser = new ChunkParserENet(_enetLeageuVersion, _replay.EncryptionKey);
+                    _chunkParser = new ChunkParserENet(_enetLeagueVersion, _replay.EncryptionKey);
                 }
 
                 // Read "chunks" from stream and hand them over to parser

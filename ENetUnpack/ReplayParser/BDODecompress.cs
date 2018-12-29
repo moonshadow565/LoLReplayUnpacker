@@ -18,35 +18,35 @@ namespace ENetUnpack.ReplayParser
             public Command(byte[] input, int inputIndex)
             {
                 uint raw = BitConverter.ToUInt32(input, inputIndex);
-                switch(raw & 0x02)
+                switch(raw & 0x03)
                 {
                     case 0:
                         Length = 3;
-                        Distance = (int)((raw >> 2) & 0b0011_1111);
+                        Distance = (int)((raw >> 2) & 0x3F);
                         CommandSize = 1;
                         break;
                     case 1:
                         Length = 3;
-                        Distance = (int)((raw >> 2) & 0b0011_1111_1111_1111);
+                        Distance = (int)((raw >> 2) & 0x3FFF);
                         CommandSize = 2;
                         break;
                     case 2:
-                        Length = (int)((raw >> 2) & 01111) + 3;
-                        Distance = (int)((raw >> 6) & 0b0011_1111_1111);
+                        Length = (int)((raw >> 2) & 0xF) + 3;
+                        Distance = (int)((raw >> 6) & 0x3FF);
                         CommandSize = 2;
                         break;
                     default://case 3:
-                        var length = (int)((raw >> 2) & 0b0001_1111);
+                        var length = (int)((raw >> 2) & 0x1F);
                         if(length != 0)
                         {
                             Length = length + 2;
-                            Distance = (int)((raw >> 7) & 0b0001_1111_1111_1111_1111);
+                            Distance = (int)((raw >> 7) & 0x1FFFF);
                             CommandSize = 3;
                         }
                         else
                         {
-                            Length = (int)((raw >> 7) & 0b1111_1111) + 3;
-                            Distance = (int)((raw >> 15) & 0b0001_1111_1111_1111_1111);
+                            Length = (int)((raw >> 7) & 0xFF) + 3;
+                            Distance = (int)((raw >> 15) & 0x1FFFF);
                             CommandSize = 4;
                         }
                         break;
@@ -54,11 +54,11 @@ namespace ENetUnpack.ReplayParser
             }
         }
 
-        public static byte[] Decompress(byte[] input)
+    public static byte[] Decompress(byte[] input)
         {
             byte flags = input[0];
             int compressedSize = (flags & 0x2) != 0 ? BitConverter.ToInt32(input, 1) : input[1];
-            int decompressedSize = (flags & 0x2) != 0 ? BitConverter.ToInt32(input, 5) : input[5];
+            int decompressedSize = (flags & 0x2) != 0 ? BitConverter.ToInt32(input, 5) : input[2];
             int inputIndex = (flags & 0x2) != 0 ? 9 : 3;
             int outputIndex = 0;
 
@@ -75,7 +75,7 @@ namespace ENetUnpack.ReplayParser
                 return output;
             }
 
-            for (uint block = 1; inputIndex < compressedSize; block <<= 1)
+            for (uint block = 1; outputIndex < decompressedSize; block >>= 1)
             {
                 if (block == 1)
                 {
@@ -87,7 +87,7 @@ namespace ENetUnpack.ReplayParser
                     var command = new Command(input, inputIndex);
                     for (var i = 0; i < command.Length; i++)
                     {
-                        output[outputIndex - command.Distance + i] = output[outputIndex + i];
+                        output[outputIndex + i] = output[outputIndex + i - command.Distance];
                     }
                     inputIndex += command.CommandSize;
                     outputIndex += command.Length;

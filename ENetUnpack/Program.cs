@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ENetUnpack.ReplayParser;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,9 +13,24 @@ namespace ENetUnpack
     {
         static void Main(string[] args)
         {
-            var packets = ReplayParser.Replay.ReadPackets(File.OpenRead("000000001.lrf"));
-            var json = JsonConvert.SerializeObject(packets);
-            File.WriteAllText("000000001.json", json);
+            var filename = "2715367.lrf";
+            ENetLeagueVersion? version = null;
+            if(args.Length > 0)
+            {
+                filename = args[0];
+            }
+            if(args.Length > 1)
+            {
+                version = (ENetLeagueVersion)Enum.Parse(typeof(ENetLeagueVersion), args[1]);
+            }
+            if(!filename.EndsWith(".lrf"))
+            {
+                Console.Error.WriteLine("Filename should end with .lrf!");
+            }
+
+            var packets = Replay.ReadPackets(File.OpenRead(filename), version);
+            var json = JsonConvert.SerializeObject(packets, Formatting.Indented);
+            File.WriteAllText(filename.Replace(".lrf", ".rlp.json"), json);
         }
     }
 }
