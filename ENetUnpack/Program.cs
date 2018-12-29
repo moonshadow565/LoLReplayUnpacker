@@ -13,7 +13,7 @@ namespace ENetUnpack
     {
         static void Main(string[] args)
         {
-            var filename = "002714470.lrf";
+            var filename = "000000002.lrf"; //002714470   002709997.lrf
             ENetLeagueVersion? version = null;
             if(args.Length > 0)
             {

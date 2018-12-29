@@ -23,10 +23,10 @@ namespace ENetUnpack.ReplayParser
 
         public override void HandleBinaryPacket(byte[] data, float timeHttp)
         {
-            data = _blowfish.Decrypt(data);
+            var decrypted = _blowfish.Decrypt(data);
             using (var decompressed = new MemoryStream())
             {
-                using (var compressed = new GZipStream(new MemoryStream(data), CompressionMode.Decompress))
+                using (var compressed = new GZipStream(new MemoryStream(decrypted), CompressionMode.Decompress))
                 {
                     compressed.CopyTo(decompressed);
                 }
