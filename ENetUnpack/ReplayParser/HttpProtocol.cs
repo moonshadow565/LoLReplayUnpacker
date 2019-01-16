@@ -173,14 +173,14 @@ namespace ENetUnpack.ReplayParser
                 }
                 using (var binary = new BinaryReader(stream, Encoding.UTF8, true))
                 {
-                    var http = Encoding.UTF8.GetString(binary.ReadBytes(index));
+                    var http = Encoding.UTF8.GetString(binary.ReadExactBytes(index));
                     var contentLengthMatch = RE_CONTENT_LEN.Match(http);
                     if(!contentLengthMatch.Success)
                     {
                         return;
                     }
                     var contentLength = long.Parse(contentLengthMatch.Groups[1].Value);
-                    var content = binary.ReadBytes((int)binary.BytesLeft());
+                    var content = binary.ReadExactBytes((int)binary.BytesLeft());
                     if (!http.Contains("application/octet-stream"))
                     {
                         if (content.Length < contentLength)

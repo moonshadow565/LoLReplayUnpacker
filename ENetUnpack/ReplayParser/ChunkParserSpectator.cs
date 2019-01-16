@@ -77,7 +77,7 @@ namespace ENetUnpack.ReplayParser
                 {
                     blockparam += reader.ReadByte();
                 }
-                byte[] packetData = reader.ReadBytes(length);
+                byte[] packetData = reader.ReadExactBytes(length);
                 AddPacket(packetType, channel, blockparam, packetData, time);
             }
         }

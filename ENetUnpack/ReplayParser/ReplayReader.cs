@@ -51,7 +51,7 @@ namespace ENetUnpack.ReplayParser
 
                 // JSON data
                 var _jsonLength = reader.ReadInt32();
-                var _json = reader.ReadBytes(_jsonLength);
+                var _json = reader.ReadExactBytes(_jsonLength);
                 var _replay = JsonConvert.DeserializeObject<Replay>(Encoding.UTF8.GetString(_json));
 
                 // Binary data offset start position
@@ -59,7 +59,7 @@ namespace ENetUnpack.ReplayParser
 
                 // Stream data
                 var _stream = _replay.DataIndex.First(kvp => kvp.Key == "stream").Value;
-                var _data = reader.ReadBytes(_stream.Size);
+                var _data = reader.ReadExactBytes(_stream.Size);
 
                 if((_data[0] & 0x4C) != 0)
                 {
@@ -68,7 +68,7 @@ namespace ENetUnpack.ReplayParser
 
                 // FIXME: detect correct league version
                 // TODO: determing where exact breaking changes in league ENet are??
-                var _enetLeagueVersion = enetLeagueVersion ?? ENetLeagueVersion.Patch_4_20;
+                var _enetLeagueVersion = enetLeagueVersion ?? ENetLeagueVersion.Seasson12;
 
                 // Type of parser spectator or ingame/ENet
                 IChunkParser _chunkParser = null;
@@ -88,7 +88,7 @@ namespace ENetUnpack.ReplayParser
                     {
                         var _chunkTime = chunksReader.ReadSingle();
                         var _chunkLength = chunksReader.ReadInt32();
-                        var _chunkData = chunksReader.ReadBytes(_chunkLength);
+                        var _chunkData = chunksReader.ReadExactBytes(_chunkLength);
                         _chunkParser.Read(_chunkData, _chunkTime);
                         var _chunkUnk = chunksReader.ReadByte();
                     }

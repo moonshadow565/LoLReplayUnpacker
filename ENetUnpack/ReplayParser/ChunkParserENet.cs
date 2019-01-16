@@ -65,7 +65,7 @@ namespace ENetUnpack.ReplayParser
                 {
                     packetLastID = reader.ReadByte();
                     packetLastNetID = reader.ReadInt32();
-                    packetData = reader.ReadBytes(packetSize - 5);
+                    packetData = reader.ReadExactBytes(packetSize - 5);
                 }
                 else
                 {
@@ -89,7 +89,7 @@ namespace ENetUnpack.ReplayParser
                     {
                         packetSize = (byte)(packetSize >> 2);
                     }
-                    packetData = reader.ReadBytes(packetSize);
+                    packetData = reader.ReadExactBytes(packetSize);
                 }
                 using (var stream = new MemoryStream())
                 {
@@ -105,7 +105,7 @@ namespace ENetUnpack.ReplayParser
                         Packets.Add(new ENetPacket
                         {
                             Channel = channel,
-                            Bytes = packetReader.ReadBytes((int)stream.Length),
+                            Bytes = packetReader.ReadExactBytes((int)stream.Length),
                             Flags = flags,
                             Time = time,
                         });
