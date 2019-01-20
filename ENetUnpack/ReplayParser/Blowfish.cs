@@ -16,7 +16,7 @@
 using System;
 using System.Security.Cryptography;
 
-namespace ENetUnpack.Handlers
+namespace ENetUnpack.ReplayParser
 {
     public class BlowFish
     {

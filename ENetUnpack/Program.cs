@@ -1,4 +1,4 @@
-﻿using ENetUnpack.Handlers;
+﻿using ENetUnpack.ReplayParser;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -13,25 +13,24 @@ namespace ENetUnpack
     {
         static void Main(string[] args)
         {
-            var fileName = "test.json";
-            if (args.Length > 0)
-                fileName = args[0];
-            var json = File.ReadAllText(fileName);
-            var replay = JsonConvert.DeserializeObject<Replay>(json);
-            var unbatcher = new ENetPacketUnbatcher();
-            var decrypt = new ENetPacketDecrypt(replay.encryptionKey, unbatcher);
-            var handler = new ENetPacketExtractor(decrypt);
-            foreach(var rPacket  in replay.packets)
+            var filename = "000000002.lrf"; //002714470   002709997.lrf
+            ENetLeagueVersion? version = null;
+            if(args.Length > 0)
             {
-                using (var reader = new BinaryReader(new MemoryStream(rPacket.Bytes)))
-                {
-                    handler.Read(reader, rPacket.Time, ENetLeagueVersion.Patch_4_20);
-                }
-            }      
-            var json2 = JsonConvert.SerializeObject(handler.Packets, Formatting.Indented);
-            File.WriteAllText(fileName.Replace(".json", ".unpacked.json"), json2);
-            Console.WriteLine("Done!");
-            Console.ReadLine();
+                filename = args[0];
+            }
+            if(args.Length > 1)
+            {
+                version = (ENetLeagueVersion)Enum.Parse(typeof(ENetLeagueVersion), args[1]);
+            }
+            if(!filename.EndsWith(".lrf"))
+            {
+                Console.Error.WriteLine("Filename should end with .lrf!");
+            }
+
+            var packets = Replay.ReadPackets(File.OpenRead(filename), version);
+            var json = JsonConvert.SerializeObject(packets, Formatting.Indented);
+            File.WriteAllText(filename.Replace(".lrf", ".rlp.json"), json);
         }
     }
 }

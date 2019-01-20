@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ENetUnpack
+namespace ENetUnpack.ReplayParser
 {
 
     [Flags]
@@ -27,9 +27,9 @@ namespace ENetUnpack
     //TODO: figure out what exact versions are to brake at 
     public enum ENetLeagueVersion
     {
-        Patch_1_0_0_106 = 0x01,
-        Patch_4_17 = 0x041,
-        Patch_4_20 = 0x042,
+        Seasson12 = 0x01,
+        Seasson34 = 0x03,
+        Patch420 = 0x05,
     }
     public class ENetProtocolHeader
     {
@@ -42,16 +42,16 @@ namespace ENetUnpack
 
         public static readonly Dictionary<ENetLeagueVersion, int> ProtocolHeaderSizes = new Dictionary<ENetLeagueVersion, int>
         {
-            [ENetLeagueVersion.Patch_1_0_0_106] = 8,
-            [ENetLeagueVersion.Patch_4_17] = 4,
-            [ENetLeagueVersion.Patch_4_20] = 8,
+            [ENetLeagueVersion.Seasson12] = 8,
+            [ENetLeagueVersion.Seasson34] = 4,
+            [ENetLeagueVersion.Patch420] = 8,
         };
 
         public ENetProtocolHeader(BinaryReader reader, float timeRecieved, ENetLeagueVersion enetLeagueVersion)
         {
             switch (enetLeagueVersion)
             {
-                case ENetLeagueVersion.Patch_1_0_0_106:
+                case ENetLeagueVersion.Seasson12:
                     {
                         SessionID = reader.ReadUInt32(true);
                         ushort peerID = reader.ReadUInt16(true);
@@ -65,7 +65,7 @@ namespace ENetUnpack
                         }
                     }
                     break;
-                case ENetLeagueVersion.Patch_4_17:
+                case ENetLeagueVersion.Seasson34:
                     {
                         SessionID = reader.ReadByte();
                         byte peerID = reader.ReadByte();
@@ -79,7 +79,7 @@ namespace ENetUnpack
                         }
                     }
                     break;
-                case ENetLeagueVersion.Patch_4_20:
+                case ENetLeagueVersion.Patch420:
                     {
                         CheckSum = reader.ReadUInt32(true);
                         SessionID = reader.ReadByte();
@@ -203,11 +203,11 @@ namespace ENetUnpack
         {
             switch(protocolHeader.ENetLeagueVersion)
             {
-                case ENetLeagueVersion.Patch_1_0_0_106:
+                case ENetLeagueVersion.Seasson12:
                     OutgoingPeerID = reader.ReadUInt16(true);
                     break;
-                case ENetLeagueVersion.Patch_4_17:
-                case ENetLeagueVersion.Patch_4_20:
+                case ENetLeagueVersion.Seasson34:
+                case ENetLeagueVersion.Patch420:
                     OutgoingPeerID = reader.ReadByte();
                     reader.ReadByte();
                     break;
@@ -222,13 +222,13 @@ namespace ENetUnpack
             PacketThrottleDeceleration = reader.ReadUInt32(true);
             switch (protocolHeader.ENetLeagueVersion)
             {
-                case ENetLeagueVersion.Patch_1_0_0_106:
+                case ENetLeagueVersion.Seasson12:
                     SessionID = reader.ReadUInt32(true);
                     break;
-                case ENetLeagueVersion.Patch_4_17:
-                case ENetLeagueVersion.Patch_4_20:
+                case ENetLeagueVersion.Seasson34:
+                case ENetLeagueVersion.Patch420:
                     SessionID = reader.ReadByte();
-                    reader.ReadBytes(3);
+                    reader.ReadExactBytes(3);
                     break;
             }
 
@@ -250,11 +250,11 @@ namespace ENetUnpack
         {
             switch (protocolHeader.ENetLeagueVersion)
             {
-                case ENetLeagueVersion.Patch_1_0_0_106:
+                case ENetLeagueVersion.Seasson12:
                     OutgoingPeerID = reader.ReadUInt16(true);
                     break;
-                case ENetLeagueVersion.Patch_4_17:
-                case ENetLeagueVersion.Patch_4_20:
+                case ENetLeagueVersion.Seasson34:
+                case ENetLeagueVersion.Patch420:
                     OutgoingPeerID = reader.ReadByte();
                     reader.ReadByte();
                     break;
@@ -316,7 +316,7 @@ namespace ENetUnpack
         public ENetProtocolSendReliable(ENetProtocolHeader protocolHeader, ENetProtocolCommandHeader protocolCommandHeader, BinaryReader reader)
         {
             ushort dataLength = reader.ReadUInt16(true);
-            Data = reader.ReadBytes(dataLength);
+            Data = reader.ReadExactBytes(dataLength);
         }
     }
     public class ENetProtocolSendUnreliable : ENetProtocol
@@ -328,7 +328,7 @@ namespace ENetUnpack
         {
             UnreliableSequenceNumber = reader.ReadUInt16(true);
             ushort dataLength = reader.ReadUInt16(true);
-            Data = reader.ReadBytes(dataLength);
+            Data = reader.ReadExactBytes(dataLength);
         }
     }
     public class ENetProtocolSendUnsequenced : ENetProtocol
@@ -340,7 +340,7 @@ namespace ENetUnpack
         {
             UnsequencedGroup = reader.ReadUInt16(true);
             ushort dataLength = reader.ReadUInt16(true);
-            Data = reader.ReadBytes(dataLength);
+            Data = reader.ReadExactBytes(dataLength);
         }
     }
     public class ENetProtocolSendFragment : ENetProtocol
@@ -360,7 +360,7 @@ namespace ENetUnpack
             FragmentNumber = reader.ReadUInt32(true);
             TotalLength = reader.ReadUInt32(true);
             FragmentOffset = reader.ReadUInt32(true);
-            Data = reader.ReadBytes(dataLength);
+            Data = reader.ReadExactBytes(dataLength);
         }
     }
 

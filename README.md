@@ -1,4 +1,3 @@
-Unwraps ENet layer from ReplayParser:
 https://github.com/LeagueSandbox/ReplayInspector
 
-This tool is replacement for PcapDecrypt
+This tool is replacement for both ReplayParser and PcapDecrypt in one.
