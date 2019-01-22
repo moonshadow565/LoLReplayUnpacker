@@ -409,10 +409,22 @@ namespace ENetUnpack.ReplayParser
                 {
                     break;
                 }
-                var protocol = ENetProtocol.CommandConstructors[protocolCommandHeader.Command](protocolHeader, protocolCommandHeader, reader);
-                if (!HandleProtocol(protocolHeader, protocolCommandHeader, protocol))
+                ENetProtocol protocol = null;
+                try
                 {
+                    protocol = ENetProtocol.CommandConstructors[protocolCommandHeader.Command](protocolHeader, protocolCommandHeader, reader);
+                }
+                catch (Exception)
+                {
+                    //FIXME: optional strict flag
                     break;
+                }
+                if (protocol != null)
+                {
+                    if (!HandleProtocol(protocolHeader, protocolCommandHeader, protocol))
+                    {
+                        break;
+                    }
                 }
             }
         }
