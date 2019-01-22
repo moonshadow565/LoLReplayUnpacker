@@ -13,16 +13,15 @@ namespace ENetUnpack
     {
         static void Main(string[] args)
         {
-            var filename = "000000002.lrf"; //002714470   002709997.lrf
-            ENetLeagueVersion? version = null;
-            if(args.Length > 0)
+            if (args.Length != 2)
             {
-                filename = args[0];
+                Console.Error.WriteLine("Bad arguments!");
+                Console.Error.WriteLine("argument 1 is path to .lrf file");
+                Console.Error.WriteLine("argument 2 is league modified enet version which is one of:");
+                Console.Error.WriteLine("Seasson12, Seasson23, Patch420");
             }
-            if(args.Length > 1)
-            {
-                version = (ENetLeagueVersion)Enum.Parse(typeof(ENetLeagueVersion), args[1]);
-            }
+            var filename = args[0];
+            ENetLeagueVersion? version = (ENetLeagueVersion)Enum.Parse(typeof(ENetLeagueVersion), args[1]);
             if(!filename.EndsWith(".lrf"))
             {
                 Console.Error.WriteLine("Filename should end with .lrf!");

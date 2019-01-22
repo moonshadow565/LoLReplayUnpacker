@@ -27,7 +27,14 @@ namespace ENetUnpack.ReplayParser
                 data = _blowfish.Decrypt(data);
             }
 
-            if (data[0] != 0xFF)
+            if (data[0] == 0xFF && channel > 0 && channel < 5)
+            {
+                using (var reader = new BinaryReader(new MemoryStream(data)))
+                {
+                    Ubatch(channel, reader, flags, time);
+                }
+            }
+            else
             {
                 Packets.Add(new ENetPacket
                 {
@@ -36,13 +43,6 @@ namespace ENetUnpack.ReplayParser
                     Flags = flags,
                     Time = time,
                 });
-            }
-            else
-            {
-                using (var reader = new BinaryReader(new MemoryStream(data)))
-                {
-                    Ubatch(channel, reader, flags, time);
-                }
             }
         }
 
