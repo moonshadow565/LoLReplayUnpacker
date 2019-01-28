@@ -18,7 +18,7 @@ namespace ENetUnpack
                 Console.Error.WriteLine("Bad arguments!");
                 Console.Error.WriteLine("argument 1 is path to .lrf file");
                 Console.Error.WriteLine("argument 2 is league modified enet version which is one of:");
-                Console.Error.WriteLine("Seasson12, Seasson23, Patch420");
+                Console.Error.WriteLine("Seasson12, Seasson34, Patch420");
             }
             var filename = args[0];
             ENetLeagueVersion? version = (ENetLeagueVersion)Enum.Parse(typeof(ENetLeagueVersion), args[1]);
